@@ -172,6 +172,8 @@ run-regress-ping-mtu: addr.py stamp-pfctl
 .endfor
 	@echo Check path MTU to AF_IN is 1280
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1480 1280
+	@echo Check path MTU from RPT_OUT is 1300
+	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1500 1300
 
 run-regress-ping6-mtu: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
@@ -181,6 +183,8 @@ run-regress-ping6-mtu: addr.py stamp-pfctl
 .endfor
 	@echo Check path MTU to AF_IN6 is 1320
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1500 1320
+	@echo Check path MTU from RPT_OUT6 is 1300
+	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1500 1300
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
