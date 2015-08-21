@@ -265,8 +265,11 @@ check-setup:
 	ssh ${PF_SSH} ping -n -c 1 ${PF_OUT}  # PF_OUT
 	ssh ${PF_SSH} route -n get -inet ${PF_OUT} | fgrep -q 'interface: lo0'  # PF_OUT
 	ssh ${PF_SSH} ping -n -c 1 ${RT_IN}  # RT_IN
-.for ip in RT_OUT ECO_IN ECO_OUT
+.for ip in RT_OUT
 	ssh ${PF_SSH} route -n get -inet ${${ip}} | fgrep -q 'gateway: ${RT_IN}'  # ${ip} RT_IN
+.endfor
+.for ip in ECO_IN ECO_OUT
+	ssh ${PF_SSH} route -n get -inet ${${ip}} | awk '/gateway:/{ if ($$2 != "${RT_IN}") exit 2 } $$2 ~ /mtu/{ getline; if ( $$2 != 1400) exit 3 }'  # ${ip} RT_IN mtu
 .endfor
 .for ip in RTT_IN RPT_OUT
 	ssh ${PF_SSH} route -n get -inet ${${ip}} | grep -q 'flags: .*REJECT'  # ${ip} reject
@@ -277,8 +280,11 @@ check-setup:
 	ssh ${PF_SSH} ping6 -n -c 1 ${PF_OUT6}  # PF_OUT6
 	ssh ${PF_SSH} route -n get -inet6 ${PF_OUT6} | fgrep -q 'interface: lo0'  # PF_OUT6
 	ssh ${PF_SSH} ping6 -n -c 1 ${RT_IN6}  # RT_IN6
-.for ip in RT_OUT ECO_IN ECO_OUT
+.for ip in RT_OUT
 	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${RT_IN6}'  # ${ip}6 RT_IN6
+.endfor
+.for ip in ECO_IN ECO_OUT
+	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} | awk '/gateway:/{ if ($$2 != "${RT_IN6}") exit 2 } $$2 ~ /mtu/{ getline; if ( $$2 != 1400) exit 3 }'  # ${ip6} RT_IN6 mtu
 .endfor
 .for ip in RTT_IN RPT_OUT
 	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} | grep -q 'flags: .*REJECT'  # ${ip}6 reject
