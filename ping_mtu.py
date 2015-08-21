@@ -8,8 +8,9 @@ from scapy.all import *
 dstaddr=sys.argv[1]
 expect=int(sys.argv[2])
 pid=os.getpid()
-payload="a" * 1472
-ip=IP(flags="DF", src=SRC_OUT, dst=dstaddr)/ICMP(id=pid)/payload
+hdr=IP(flags="DF", src=SRC_OUT, dst=dstaddr)/ICMP(id=pid)
+payload="a" * (1500 - len(str(hdr)))
+ip=hdr/payload
 iplen=IP(str(ip)).len
 eth=Ether(src=SRC_MAC, dst=PF_MAC)/ip
 a=srp1(eth, iface=SRC_IF, timeout=2)
