@@ -166,7 +166,7 @@ TARGETS +=	ping-mtu-1400 ping6-mtu-1400
 
 run-regress-ping-mtu-1400: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT
 	@echo Check path MTU to ${ip} is 1400
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
 .endfor
@@ -177,7 +177,7 @@ run-regress-ping-mtu-1400: addr.py stamp-pfctl
 
 run-regress-ping6-mtu-1400: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT
 	@echo Check path MTU to ${ip}6 is 1400
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1400
 .endfor
