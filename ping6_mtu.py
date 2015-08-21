@@ -5,11 +5,14 @@ import os
 from addr import *
 from scapy.all import *
 
+# usage: ping6_mtu dst size icmp6-size
+
 dstaddr=sys.argv[1]
-expect=int(sys.argv[2])
+size=int(sys.argv[2])
+expect=int(sys.argv[3])
 pid=os.getpid()
 hdr=IPv6(src=SRC_OUT6, dst=dstaddr)/ICMPv6EchoRequest(id=pid)
-payload="a" * (1500 - len(str(hdr)))
+payload="a" * (size - len(str(hdr)))
 ip=hdr/payload
 iplen=IPv6(str(ip)).plen
 eth=Ether(src=SRC_MAC, dst=PF_MAC)/ip

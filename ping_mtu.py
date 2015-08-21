@@ -5,11 +5,14 @@ import os
 from addr import *
 from scapy.all import *
 
+# usage: ping_mtu dst size icmp-size
+
 dstaddr=sys.argv[1]
-expect=int(sys.argv[2])
+size=int(sys.argv[2])
+expect=int(sys.argv[3])
 pid=os.getpid()
 hdr=IP(flags="DF", src=SRC_OUT, dst=dstaddr)/ICMP(id=pid)
-payload="a" * (1500 - len(str(hdr)))
+payload="a" * (size - len(str(hdr)))
 ip=hdr/payload
 iplen=IP(str(ip)).len
 eth=Ether(src=SRC_MAC, dst=PF_MAC)/ip
