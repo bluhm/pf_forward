@@ -17,6 +17,7 @@ ip=hdr/payload
 iplen=IP(str(ip)).len
 eth=Ether(src=SRC_MAC, dst=PF_MAC)/ip
 a=srp1(eth, iface=SRC_IF, timeout=2)
+
 if a and a.payload.payload.type==3 and a.payload.payload.code==4:
 	mtu=a.payload.payload.unused
 	print "mtu=%d" % (mtu)
