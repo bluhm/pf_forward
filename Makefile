@@ -157,6 +157,36 @@ run-regress-ping6: stamp-pfctl
 	ping6 -n -c 1 -S ${RPT_OUT6} ${ECO_IN6}
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
+# parse response packet to determine MTU of the packet filter.  The
+# MTU has to be 1400 octets.  The MTU has to be defined at the routes
+# of the packet filter PF before.  Packet size is 1500.
+# Check that the IP length of the original packet and the ICMP
+# quoted packet are the same.
+TARGETS +=	ping-mtu-1400 ping6-mtu-1400
+
+run-regress-ping-mtu-1400: addr.py stamp-pfctl
+	@echo '\n======== $@ ========'
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+	@echo Check path MTU to ${ip} is 1400
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
+.endfor
+	@echo Check path MTU to AF_IN is 1380
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1480 1380
+	@echo Check path MTU from RPT_OUT is 1400
+	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1500 1400
+
+run-regress-ping6-mtu-1400: addr.py stamp-pfctl
+	@echo '\n======== $@ ========'
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+	@echo Check path MTU to ${ip}6 is 1400
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1400
+.endfor
+	@echo Check path MTU to AF_IN6 is 1420
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1500 1420
+	@echo Check path MTU from RPT_OUT6 is 1400
+	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1500 1400
+
+# Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the router.  The MTU has
 # to be 1300 octets.  The MTU has to be defined at out interface of
 # the router RT before.  Packet size is 1400 to pass PF MTU.
