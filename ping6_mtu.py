@@ -5,11 +5,14 @@ import os
 from addr import *
 from scapy.all import *
 
-dstaddr=sys.argv[1]
-expect=int(sys.argv[2])
+# usage: ping6_mtu src dst icmp6-size
+
+srcaddr=sys.argv[1]
+dstaddr=sys.argv[2]
+expect=int(sys.argv[3])
 pid=os.getpid()
 payload="a" * 1452
-ip=IPv6(src=SRC_OUT6, dst=dstaddr)/ICMPv6EchoRequest(id=pid, data=payload)
+ip=IPv6(src=srcaddr, dst=dstaddr)/ICMPv6EchoRequest(id=pid, data=payload)
 iplen=IPv6(str(ip)).plen
 eth=Ether(src=SRC_MAC, dst=PF_MAC)/ip
 
@@ -20,7 +23,7 @@ if os.fork() == 0:
 	sendp(eth, iface=SRC_IF)
 	os._exit(0)
 ans=sniff(iface=SRC_IF, timeout=3, filter=
-    "ip6 and dst "+SRC_OUT6+" and icmp6")
+    "ip6 and dst "+srcaddr+" and icmp6")
 if len(ans) == 0:
 	print "no packet sniffed"
 	exit(2)
