@@ -170,8 +170,6 @@ run-regress-ping-mtu-1400: addr.py stamp-pfctl
 	@echo Check path MTU to ${ip} is 1400
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
 .endfor
-	@echo Check path MTU to AF_IN is 1380
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1480 1380
 	@echo Check path MTU from RPT_OUT is 1400
 	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1500 1400
 
@@ -181,8 +179,6 @@ run-regress-ping6-mtu-1400: addr.py stamp-pfctl
 	@echo Check path MTU to ${ip}6 is 1400
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1400
 .endfor
-	@echo Check path MTU to AF_IN6 is 1420
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1500 1420
 	@echo Check path MTU from RPT_OUT6 is 1400
 	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1500 1400
 
