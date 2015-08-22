@@ -244,18 +244,22 @@ run-regress-tcp: stamp-pfctl
 	@echo '\n======== $@ ========'
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
 	@echo Check tcp ${ip}:
+	${SUDO} route -n delete -host -inet ${${ip}} || true
 	openssl rand 200000 | nc -N ${${ip}} 7 | wc -c | grep '200000$$'
 .endfor
 	@echo Check tcp RPT_OUT:
+	${SUDO} route -n delete -host -inet ${RPT_OUT} || true
 	openssl rand 200000 | nc -N -s ${RPT_OUT} ${ECO_IN} 7 | wc -c | grep '200000$$'
 
 run-regress-tcp6: stamp-pfctl
 	@echo '\n======== $@ ========'
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
 	@echo Check tcp ${ip}6:
+	${SUDO} route -n delete -host -inet6 ${${ip}6} || true
 	openssl rand 200000 | nc -N ${${ip}6} 7 | wc -c | grep '200000$$'
 .endfor
 	@echo Check tcp RPT_OUT6:
+	${SUDO} route -n delete -host -inet6 ${RPT_OUT6} || true
 	openssl rand 200000 | nc -N -s ${RPT_OUT6} ${ECO_IN6} 7 | wc -c | grep '200000$$'
 
 REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
