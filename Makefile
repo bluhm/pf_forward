@@ -160,8 +160,7 @@ run-regress-ping6: stamp-pfctl
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the packet filter.  The
-# MTU has to be 1400 octets.  The interface MTU of PF is set
-# automatically.  Packet size is 1500.
+# outgoing MTU of PF has to be 1400 octets.  Packet size is 1500.
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
 TARGETS +=	ping-mtu-1400 ping6-mtu-1400
@@ -315,6 +314,7 @@ check-setup:
 	ssh ${PF_SSH} ${SUDO} pfctl -si | grep '^Status: Enabled '
 	ssh ${PF_SSH} sysctl net.inet.ip.forwarding | fgrep =1
 	ssh ${PF_SSH} sysctl net.inet6.ip6.forwarding | fgrep =1
+	ssh ${PF_SSH} ifconfig ${PF_IFOUT} | fgrep 'mtu 1400'
 	@echo '\n======== $@ RT ========'
 	ssh ${RT_SSH} ping -n -c 1 ${RT_IN}  # RT_IN
 	ssh ${RT_SSH} route -n get -inet ${RT_IN} | fgrep -q 'interface: lo0'  # RT_IN
