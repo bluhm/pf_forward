@@ -156,7 +156,7 @@ run-regress-ping6: stamp-pfctl
 	ping6 -n -c 1 ${${ip}6}
 .endfor
 	@echo Check ping RPT_OUT6:
-	ping6 -n -c 1 -S ${RPT_OUT6} ${ECO_IN6}
+	ping6 -n -c 1 -I ${RPT_OUT6} ${ECO_IN6}
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the packet filter.  The
