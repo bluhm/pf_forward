@@ -11,7 +11,7 @@ srcaddr=sys.argv[1]
 dstaddr=sys.argv[2]
 size=int(sys.argv[3])
 expect=int(sys.argv[4])
-pid=os.getpid()
+pid=os.getpid() & 0xffff
 hdr=IP(flags="DF", src=srcaddr, dst=dstaddr)/ICMP(id=pid)
 payload="a" * (size - len(str(hdr)))
 ip=hdr/payload
