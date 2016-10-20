@@ -39,6 +39,9 @@ sendp(eth, iface=SRC_IF)
 sniffer.join(timeout=5)
 a = sniffer.packet
 
+if a is None:
+	print "no packet sniffed"
+	exit(2)
 if a and a.type == ETH_P_IPV6 and \
     ipv6nh[a.payload.nh] == 'ICMPv6' and \
     icmp6types[a.payload.payload.type] == 'Packet too big':
