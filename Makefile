@@ -279,7 +279,6 @@ run-regress-tcp6: stamp-pfctl
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
-# XXX AF_IN and RPT_OUT have issues, do not test them now.
 
 TRACEROUTE_CHECK =	awk \
     'BEGIN{ x=0 } \
@@ -294,17 +293,21 @@ TARGETS +=	traceroute-${proto} traceroute-${proto}6
 
 run-regress-traceroute-${proto}: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
 	@echo Check traceroute ${proto} ${ip}:
 	traceroute ${proto:S/icmp/-I/:S/udp//} ${${ip}} | ${TRACEROUTE_CHECK}
 .endfor
+	@echo Check traceroute ${proto} RPT_OUT:
+	traceroute ${proto:S/icmp/-I/:S/udp//} -s ${RPT_OUT} ${ECO_IN} | ${TRACEROUTE_CHECK}
 
 run-regress-traceroute-${proto}6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
 	@echo Check traceroute ${proto}6 ${ip}6:
 	traceroute6 ${proto:S/icmp/-I/:S/udp//} ${${ip}6} | ${TRACEROUTE_CHECK}
 .endfor
+	@echo Check traceroute ${proto}6 RPT_OUT6:
+	traceroute ${proto:S/icmp/-I/:S/udp//} -s ${RPT_OUT6} ${ECO_IN6} | ${TRACEROUTE_CHECK}
 .endfor
 
 REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
