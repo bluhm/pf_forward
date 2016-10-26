@@ -121,8 +121,8 @@ addr.py: Makefile
 .endfor
 	mv $@.tmp $@
 
-# load the pf rules into the kernel of the PF machine
-# XXX pfctl does not replace variables after @
+# Load the pf rules into the kernel of the PF machine.
+# XXX pfctl does not replace variables after @.
 stamp-pfctl: addr.py pf.conf
 	cat addr.py ${.CURDIR}/pf.conf | pfctl -n -f -
 	cat addr.py ${.CURDIR}/pf.conf | \
@@ -167,7 +167,7 @@ run-regress-ping6: stamp-pfctl
 # outgoing MTU of PF has to be 1400 octets.  Packet size is 1500.
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
-# XXX AF_IN is broken with PF MTU
+# XXX AF_IN is broken with PF MTU.
 TARGETS +=	ping-mtu-1400 ping6-mtu-1400
 
 run-regress-ping-mtu-1400: addr.py stamp-pfctl
@@ -279,7 +279,7 @@ run-regress-tcp6: stamp-pfctl
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
-# XXX AF_IN and RPT_OUT have issues, do not test them now
+# XXX AF_IN and RPT_OUT have issues, do not test them now.
 
 TRACEROUTE_CHECK =	awk \
     'BEGIN{ x=0 } \
