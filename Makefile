@@ -277,6 +277,22 @@ run-regress-tcp6: stamp-pfctl
 	${SUDO} route -n delete -host -inet6 ${RPT_OUT6} || true
 	openssl rand 200000 | nc -N -s ${RPT_OUT6} ${ECO_IN6} 7 | wc -c | grep '200000$$'
 
+TRACEROUTE_CHECK =	awk \
+    'BEGIN{ x=0 } \
+    { print $$0 } \
+    { n=$$1 } \
+    /\*/{ x++ } \
+    END{ if (n!=3) { print "hopcount is not 3: "n; exit 2 } } \
+    END{ if (x!=0) { print "unanswered probes: "x; exit 3 } }'
+run-regress-traceroute-icmp: stamp-pfctl
+	@echo '\n======== $@ ========'
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
+	@echo Check traceroute icmp ${ip}:
+	traceroute -I ${${ip}} | ${TRACEROUTE_CHECK}
+.endfor
+	@echo Check traceroute icmp RPT_OUT:
+	traceroute -I -s ${RPT_OUT} ${ECO_IN} | ${TRACEROUTE_CHECK}
+
 REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
 
 CLEANFILES +=		addr.py *.pyc *.log stamp-*
