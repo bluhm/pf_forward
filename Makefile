@@ -142,7 +142,7 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 # and all routing table are set up to allow bidirectional packet flow.
 # Note that RDR does not exist physically.  So this traffic is rewritten
 # by PF and handled by ECO.
-TARGETS +=	ping  ping6
+TARGETS +=	ping ping6
 
 run-regress-ping: stamp-pfctl
 	@echo '\n======== $@ ========'
@@ -220,7 +220,7 @@ run-regress-ping6-mtu-1300: addr.py stamp-pfctl
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
-TARGETS +=	udp  udp6
+TARGETS +=	udp udp6
 
 run-regress-udp: stamp-pfctl
 	@echo '\n======== $@ ========'
@@ -245,7 +245,7 @@ run-regress-udp6: stamp-pfctl
 # Count the reflected bytes and compare with the transmitted ones.
 # Delete host route before test to trigger PMTU discovery.
 # XXX AF_IN is broken with PF MTU, make sure that it hits RT MTU 1300.
-TARGETS +=	tcp  tcp6
+TARGETS +=	tcp tcp6
 
 run-regress-tcp: stamp-pfctl
 	@echo '\n======== $@ ========'
