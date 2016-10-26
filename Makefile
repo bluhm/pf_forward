@@ -285,8 +285,8 @@ TRACEROUTE_CHECK =	awk \
     { print $$0 } \
     { n=$$1 } \
     /\*/{ x++ } \
-    END{ if (n!=3) { print "hopcount is not 3: "n; exit 2 } } \
-    END{ if (x!=0) { print "unanswered probes: "x; exit 3 } }'
+    END{ if (n!=3) { print "hopcount is not 3: "n; exit 1 } } \
+    END{ if (x!=0) { print "unanswered probes: "x; exit 1 } }'
 
 .for proto in icmp udp
 TARGETS +=	traceroute-${proto} traceroute-${proto}6
