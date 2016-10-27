@@ -308,7 +308,7 @@ run-regress-traceroute-${proto}6: stamp-pfctl
 	traceroute6 ${proto:S/icmp/-I/:S/udp//} ${${ip}6} | ${TRACEROUTE_CHECK}
 .endfor
 	@echo Check traceroute ${proto}6 RPT_OUT6:
-	traceroute ${proto:S/icmp/-I/:S/udp//} -s ${RPT_OUT6} ${ECO_IN6} | ${TRACEROUTE_CHECK}
+	traceroute6 ${proto:S/icmp/-I/:S/udp//} -s ${RPT_OUT6} ${ECO_IN6} | ${TRACEROUTE_CHECK}
 .endfor
 
 REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
