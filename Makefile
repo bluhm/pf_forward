@@ -146,21 +146,33 @@ TARGETS +=	ping ping6
 
 run-regress-ping: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	@echo Check ping ${ip}:
-	ping -n -c 1 ${${ip}}
-.endfor
-	@echo Check ping RPT_OUT:
-	ping -n -c 1 -I ${RPT_OUT} ${ECO_IN}
+	${MAKE} -C ${.CURDIR} run-regress-ping-inet
 
 run-regress-ping6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	@echo Check ping ${ip}6:
+	${MAKE} -C ${.CURDIR} run-regress-ping-inet6
+
+.for inet in inet inet6
+.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+run-regress-ping-${inet}: run-regress-ping-${inet}-${ip}
+run-regress-ping-${inet}-${ip}:
+	@echo '======== $@ ========'
+	@echo Check ping ${inet} ${ip}:
+.if "RPT_OUT" == ${ip}
+.if "inet" == ${inet}
+	ping -n -c 1 -I ${${ip}} ${ECO_IN}
+.else
+	ping6 -n -c 1 -I ${${ip}6} ${ECO_IN6}
+.endif
+.else
+.if "inet" == ${inet}
+	ping -n -c 1 ${${ip}}
+.else
 	ping6 -n -c 1 ${${ip}6}
+.endif
+.endif
 .endfor
-	@echo Check ping RPT_OUT6:
-	ping6 -n -c 1 -I ${RPT_OUT6} ${ECO_IN6}
+.endfor
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the packet filter.  The
