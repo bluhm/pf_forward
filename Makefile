@@ -38,7 +38,7 @@ regress:
 # 4 +---+ 5   6 +--+   7 +---+   +---+ 8
 #   |RDR|       |AF|     |RTT|   |RPT|
 #   +---+       +--+     +---+   +---+
-#  in   out    in       in           out
+#  in   out    in  out  in           out
 
 # Configure Addresses on the machines, there must be routes for the
 # networks.  Adapt interface and addresse variables to your local
@@ -67,7 +67,8 @@ ECO_IN ?=	10.188.212.52
 ECO_OUT ?=	10.188.213.52
 RDR_IN ?=	10.188.214.188
 RDR_OUT ?=	10.188.215.188
-AF_IN ?=	10.188.216.82		# /24 must be dec(ECO_IN6/120)
+AF_IN ?=	10.188.220.82		# /24 must be dec(ECO_IN6/120)
+AF_OUT ?=	10.188.221.82		# /24 must be dec(ECO_IN6/120)
 RTT_IN ?=	10.188.217.52
 RPT_OUT ?=	10.188.218.10
 
@@ -80,7 +81,8 @@ ECO_IN6 ?=	fdd7:e83e:66bc:212:5054:ff:fe12:3452
 ECO_OUT6 ?=	fdd7:e83e:66bc:213:5054:ff:fe12:3452
 RDR_IN6 ?=	fdd7:e83e:66bc:214::188
 RDR_OUT6 ?=	fdd7:e83e:66bc:215::188
-AF_IN6 ?=	fdd7:e83e:66bc:216::34	# /120 must be hex(ECO_IN/24)
+AF_IN6 ?=	fdd7:e83e:66bc:220::34	# /120 must be hex(ECO_IN/24)
+AF_OUT6 ?=	fdd7:e83e:66bc:221::34	# /120 must be hex(ECO_IN/24)
 RTT_IN6 ?=	fdd7:e83e:66bc:217:5054:ff:fe12:3452
 RPT_OUT6 ?=	fdd7:e83e:66bc:1218:fce1:baff:fed1:561f
 
@@ -115,7 +117,7 @@ addr.py: Makefile
 	echo 'PF_IFIN="${PF_IFIN}"' >>$@.tmp
 	echo 'PF_IFOUT="${PF_IFOUT}"' >>$@.tmp
 	echo 'PF_MAC="${PF_MAC}"' >>$@.tmp
-.for var in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+.for var in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN RPT_OUT
 	echo '${var}="${${var}}"' >>$@.tmp
 	echo '${var}6="${${var}6}"' >>$@.tmp
 .endfor
@@ -146,7 +148,7 @@ TARGETS +=	ping ping6
 
 run-regress-ping: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
+.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN
 	@echo Check ping ${ip}:
 	ping -n -c 1 ${${ip}}
 .endfor
@@ -155,7 +157,7 @@ run-regress-ping: stamp-pfctl
 
 run-regress-ping6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
+.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN
 	@echo Check ping ${ip}6:
 	ping6 -n -c 1 ${${ip}6}
 .endfor
@@ -202,8 +204,10 @@ run-regress-ping-mtu-1300: addr.py stamp-pfctl
 	@echo Check path MTU to ${ip} is 1300
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1400 1300
 .endfor
-	@echo Check path MTU to AF_IN is 1280
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1380 1280
+.for ip in AF_IN AF_OUT
+	@echo Check path MTU to ${ip} is 1280
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1380 1280
+.endfor
 	@echo Check path MTU from RPT_OUT is 1300
 	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1400 1300
 
@@ -213,8 +217,10 @@ run-regress-ping6-mtu-1300: addr.py stamp-pfctl
 	@echo Check path MTU to ${ip}6 is 1300
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1400 1300
 .endfor
-	@echo Check path MTU to AF_IN6 is 1320
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1420 1320
+.for ip in AF_IN AF_OUT
+	@echo Check path MTU to ${ip}6 is 1320
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1420 1320
+.endfor
 	@echo Check path MTU from RPT_OUT6 is 1300
 	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1400 1300
 
@@ -224,7 +230,7 @@ TARGETS +=	udp udp6
 
 run-regress-udp: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN
 	@echo Check UDP ${ip}:
 	( echo $$$$ | nc -u ${${ip}} 7 & sleep 1; kill $$! ) | grep $$$$
 .endfor
@@ -233,7 +239,7 @@ run-regress-udp: stamp-pfctl
 
 run-regress-udp6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN
 	@echo Check UDP ${ip}6:
 	( echo $$$$ | nc -u ${${ip}6} 7 & sleep 1; kill $$! ) | grep $$$$
 .endfor
@@ -244,20 +250,19 @@ run-regress-udp6: stamp-pfctl
 # with netcat.  Use enough data to make sure PMTU discovery works.
 # Count the reflected bytes and compare with the transmitted ones.
 # Delete host route before test to trigger PMTU discovery.
-# XXX AF_IN is broken with PF MTU, make sure that it hits RT MTU 1300.
+# XXX AF_IN AF_OUT is broken with PF MTU, make sure that it hits RT MTU 1300.
 TARGETS +=	tcp tcp6
 
 run-regress-tcp: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN AF_OUT RTT_IN
 	@echo Check tcp ${ip}:
 	${SUDO} route -n delete -host -inet ${${ip}} || true
+.if empty (${ip:MAF_*})
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1380 1280 || true
+.endif
 	openssl rand 200000 | nc -N ${${ip}} 7 | wc -c | grep '200000$$'
 .endfor
-	@echo Check tcp AF_IN:
-	${SUDO} route -n delete -host -inet ${AF_IN} || true
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1380 1280 || true
-	openssl rand 200000 | nc -N ${AF_IN} 7 | wc -c | grep '200000$$'
 	@echo Check tcp RPT_OUT:
 	${SUDO} route -n delete -host -inet ${RPT_OUT} || true
 	openssl rand 200000 | nc -N -s ${RPT_OUT} ${ECO_IN} 7 | wc -c | grep '200000$$'
