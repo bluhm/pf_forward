@@ -138,12 +138,13 @@ PYTHON =	python2.7 ./
 PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 .endif
 
+.for inet in inet inet6
+
 # Ping all addresses.  This ensures that the IP addresses are configured
 # and all routing table are set up to allow bidirectional packet flow.
 # Note that RDR does not exist physically.  So this traffic is rewritten
 # by PF and handled by ECO.
 
-.for inet in inet inet6
 .for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-${inet}-${ip}
 run-regress-ping-${inet}-${ip}: stamp-pfctl
@@ -155,7 +156,6 @@ run-regress-ping-${inet}-${ip}: stamp-pfctl
 	ping${inet:S/inet//} -n -c 1 ${${ip}${inet:S/inet//}}
 .endif
 .endfor
-.endfor
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the packet filter.  The
@@ -163,12 +163,11 @@ run-regress-ping-${inet}-${ip}: stamp-pfctl
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
 
-run-regress-ping-mtu-1400-inet-AF_IN run-regress-ping-mtu-1400-inet6-AF_IN:
+run-regress-ping-mtu-1400-${inet}-AF_IN:
 	@echo '======== $@ ========'
 	@echo 'AF_IN is broken with PF MTU.'
 	@echo DISABLED
 
-.for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-mtu-1400-${inet}-${ip}
 run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
@@ -180,7 +179,6 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1500 1400
 .endif
 .endfor
-.endfor
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the router.  The MTU has
@@ -189,7 +187,6 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
 
-.for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-mtu-1300-${inet}-${ip}
 run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
@@ -207,12 +204,10 @@ run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1400 1300
 .endif
 .endfor
-.endfor
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
 
-.for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	udp-${inet}-${ip}
 run-regress-udp-${inet}-${ip}: stamp-pfctl
@@ -224,7 +219,6 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 	( echo $$$$ | nc -u ${${ip}${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
 .endif
 .endfor
-.endfor
 
 # Send a data stream to TCP echo port 7 to all destination addresses
 # with netcat.  Use enough data to make sure PMTU discovery works.
@@ -232,7 +226,6 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 # Delete host route before test to trigger PMTU discovery.
 # XXX AF_IN is broken with PF MTU, make sure that it hits RT MTU 1300.
 
-.for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	tcp-${inet}-${ip}
 run-regress-tcp-${inet}-${ip}: stamp-pfctl
@@ -252,7 +245,8 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 	openssl rand 200000 | nc -N ${${ip}${inet:S/inet//}} 7 | wc -c | grep '200000$$'
 .endif
 .endfor
-.endfor
+
+.endfor # inet
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
