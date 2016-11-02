@@ -238,21 +238,25 @@ TARGETS +=	udp udp6
 
 run-regress-udp: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	@echo Check UDP ${ip}:
-	( echo $$$$ | nc -u ${${ip}} 7 & sleep 1; kill $$! ) | grep $$$$
-.endfor
-	@echo Check UDP RPT_OUT:
-	( echo $$$$ | nc -u -s ${RPT_OUT} ${ECO_IN} 7 & sleep 1; kill $$! ) | grep $$$$
+	${MAKE} -C ${.CURDIR} run-regress-udp-inet
 
 run-regress-udp6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	@echo Check UDP ${ip}6:
-	( echo $$$$ | nc -u ${${ip}6} 7 & sleep 1; kill $$! ) | grep $$$$
+	${MAKE} -C ${.CURDIR} run-regress-udp-inet6
+
+.for inet in inet inet6
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+run-regress-udp-${inet}: run-regress-udp-${inet}-${ip}
+run-regress-udp-${inet}-${ip}:
+	@echo '======== $@ ========'
+	@echo Check UDP ${ip${inet:S/inet//}}:
+.if "RPT_OUT" == ${ip}
+	( echo $$$$ | nc -u -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
+.else
+	( echo $$$$ | nc -u ${${ip}${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
+.endif
 .endfor
-	@echo Check UDP RPT_OUT6:
-	( echo $$$$ | nc -u -s ${RPT_OUT6} ${ECO_IN6} 7 & sleep 1; kill $$! ) | grep $$$$
+.endfor
 
 # Send a data stream to TCP echo port 7 to all destination addresses
 # with netcat.  Use enough data to make sure PMTU discovery works.
