@@ -241,7 +241,6 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 .endif
 
 .endfor # ip
-.endfor # inet
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
@@ -255,23 +254,22 @@ TRACEROUTE_CHECK =	awk \
     END{ if (n!=3) { print "hopcount is not 3: "n; exit 1 } } \
     END{ if (x!=0) { print "unanswered probes: "x; exit 1 } }'
 
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 .for proto in icmp udp
-TARGETS +=	traceroute-${proto} traceroute-${proto}6
+run-regress-traceroute-${proto}-${inet}-AF_IN run-regress-traceroute-${proto}-${inet}-RPT_OUT:
+	@echo '======== $@ ========'
+	@echo 'AF_IN is broken with PF MTU.'
+	@echo DISABLED
 
-run-regress-traceroute-${proto}: stamp-pfctl
-	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check traceroute ${proto} ${ip}:
-	traceroute ${proto:S/icmp/-I/:S/udp//} ${${ip}} | ${TRACEROUTE_CHECK}
-.endfor
+TARGETS +=	traceroute-${proto}-${inet}-${ip}
+run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
+	@echo '======== $@ ========'
+	@echo Check traceroute ${proto} ${ip${inet:S/inet//}}:
+	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} ${${ip}${inet:S/inet//}} | ${TRACEROUTE_CHECK}
+.endfor # proto
+.endfor # ip
 
-run-regress-traceroute-${proto}6: stamp-pfctl
-	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check traceroute ${proto}6 ${ip}6:
-	traceroute6 ${proto:S/icmp/-I/:S/udp//} ${${ip}6} | ${TRACEROUTE_CHECK}
-.endfor
-.endfor
+.endfor # inet
 
 REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
 
