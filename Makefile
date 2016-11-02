@@ -206,25 +206,31 @@ TARGETS +=	ping-mtu-1300 ping6-mtu-1300
 
 run-regress-ping-mtu-1300: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check path MTU to ${ip} is 1300
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1400 1300
-.endfor
-	@echo Check path MTU to AF_IN is 1280
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1380 1280
-	@echo Check path MTU from RPT_OUT is 1300
-	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1400 1300
+	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1300-inet
 
 run-regress-ping6-mtu-1300: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check path MTU to ${ip}6 is 1300
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1400 1300
+	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1300-inet6
+
+.for inet in inet inet6
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+run-regress-ping-mtu-1300-${inet}: run-regress-ping-mtu-1300-${inet}-${ip}
+run-regress-ping-mtu-1300-${inet}-${ip}:
+	@echo '======== $@ ========'
+	@echo Check path MTU from ${ip}${inet:S/inet//} is 1300
+.if "RPT_OUT" == ${ip}
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1400 1300
+.elif "AF_IN" == ${ip}
+.if "inet" == ${inet}
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1380 1280
+.else
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1420 1320
+.endif
+.else
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1400 1300
+.endif
 .endfor
-	@echo Check path MTU to AF_IN6 is 1320
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1420 1320
-	@echo Check path MTU from RPT_OUT6 is 1300
-	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1400 1300
+.endfor
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
