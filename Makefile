@@ -142,20 +142,11 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 # and all routing table are set up to allow bidirectional packet flow.
 # Note that RDR does not exist physically.  So this traffic is rewritten
 # by PF and handled by ECO.
-TARGETS +=	ping ping6
-
-run-regress-ping: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-inet
-
-run-regress-ping6: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-inet6
 
 .for inet in inet inet6
 .for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
-run-regress-ping-${inet}: run-regress-ping-${inet}-${ip}
-run-regress-ping-${inet}-${ip}:
+TARGETS +=	ping-${inet}-${ip}
+run-regress-ping-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
 	@echo Check ping ${ip}${inet:S/inet//}:
 .if "RPT_OUT" == ${ip}
@@ -171,21 +162,16 @@ run-regress-ping-${inet}-${ip}:
 # outgoing MTU of PF has to be 1400 octets.  Packet size is 1500.
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
-# XXX AF_IN is broken with PF MTU.
-TARGETS +=	ping-mtu-1400 ping6-mtu-1400
 
-run-regress-ping-mtu-1400: addr.py stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1400-inet
-
-run-regress-ping6-mtu-1400: addr.py stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1400-inet6
+run-regress-ping-mtu-1400-inet-AF_IN run-regress-ping-mtu-1400-inet6-AF_IN:
+	@echo '======== $@ ========'
+	@echo 'AF_IN is broken with PF MTU.'
+	@echo DISABLED
 
 .for inet in inet inet6
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-run-regress-ping-mtu-1400-${inet}: run-regress-ping-mtu-1400-${inet}-${ip}
-run-regress-ping-mtu-1400-${inet}-${ip}:
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+TARGETS +=	ping-mtu-1400-${inet}-${ip}
+run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
 	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
 .if "RPT_OUT" == ${ip}
@@ -202,20 +188,11 @@ run-regress-ping-mtu-1400-${inet}-${ip}:
 # the router RT before.  Packet size is 1400 to pass PF MTU.
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
-TARGETS +=	ping-mtu-1300 ping6-mtu-1300
-
-run-regress-ping-mtu-1300: addr.py stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1300-inet
-
-run-regress-ping6-mtu-1300: addr.py stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1300-inet6
 
 .for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
-run-regress-ping-mtu-1300-${inet}: run-regress-ping-mtu-1300-${inet}-${ip}
-run-regress-ping-mtu-1300-${inet}-${ip}:
+TARGETS +=	ping-mtu-1300-${inet}-${ip}
+run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
 	@echo Check path MTU from ${ip}${inet:S/inet//} is 1300
 .if "RPT_OUT" == ${ip}
@@ -234,20 +211,11 @@ run-regress-ping-mtu-1300-${inet}-${ip}:
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
-TARGETS +=	udp udp6
-
-run-regress-udp: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-udp-inet
-
-run-regress-udp6: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-udp-inet6
 
 .for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
-run-regress-udp-${inet}: run-regress-udp-${inet}-${ip}
-run-regress-udp-${inet}-${ip}:
+TARGETS +=	udp-${inet}-${ip}
+run-regress-udp-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
 	@echo Check UDP ${ip${inet:S/inet//}}:
 .if "RPT_OUT" == ${ip}
@@ -263,20 +231,11 @@ run-regress-udp-${inet}-${ip}:
 # Count the reflected bytes and compare with the transmitted ones.
 # Delete host route before test to trigger PMTU discovery.
 # XXX AF_IN is broken with PF MTU, make sure that it hits RT MTU 1300.
-TARGETS +=	tcp tcp6
-
-run-regress-tcp: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-tcp-inet
-
-run-regress-tcp6: stamp-pfctl
-	@echo '\n======== $@ ========'
-	${MAKE} -C ${.CURDIR} run-regress-tcp-inet6
 
 .for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
-run-regress-tcp-${inet}: run-regress-tcp-${inet}-${ip}
-run-regress-tcp-${inet}-${ip}:
+TARGETS +=	tcp-${inet}-${ip}
+run-regress-tcp-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
 	@echo Check tcp ${ip}${inet:S/inet//}:
 	${SUDO} route -n delete -host -inet ${${ip}${inet:S/inet//}} || true
