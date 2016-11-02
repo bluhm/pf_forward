@@ -159,17 +159,9 @@ run-regress-ping-${inet}-${ip}:
 	@echo '======== $@ ========'
 	@echo Check ping ${ip}${inet:S/inet//}:
 .if "RPT_OUT" == ${ip}
-.if "inet" == ${inet}
-	ping -n -c 1 -I ${${ip}} ${ECO_IN}
+	ping${inet:S/inet//} -n -c 1 -I ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}}
 .else
-	ping6 -n -c 1 -I ${${ip}6} ${ECO_IN6}
-.endif
-.else
-.if "inet" == ${inet}
-	ping -n -c 1 ${${ip}}
-.else
-	ping6 -n -c 1 ${${ip}6}
-.endif
+	ping${inet:S/inet//} -n -c 1 ${${ip}${inet:S/inet//}}
 .endif
 .endfor
 .endfor
@@ -197,17 +189,9 @@ run-regress-ping-mtu-1400-${inet}-${ip}:
 	@echo '======== $@ ========'
 	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
 .if "RPT_OUT" == ${ip}
-.if "inet" == ${inet}
-	${SUDO} ${PYTHON}ping_mtu.py ${${ip}} ${ECO_IN} 1500 1400
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1500 1400
 .else
-	${SUDO} ${PYTHON}ping6_mtu.py ${${ip}6} ${ECO_IN6} 1500 1400
-.endif
-.else
-.if "inet" == ${inet}
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
-.else
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1400
-.endif
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1500 1400
 .endif
 .endfor
 .endfor
@@ -441,9 +425,9 @@ check-setup-eco:
 .for ip in RT_IN PF_OUT PF_IN SRC_OUT RPT_OUT
 	ssh ${ECO_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${RT_OUT6}'  # ${ip}6 RT_OUT6
 .endfor
-.for af in inet inet6
+.for inet in inet inet6
 .for proto in udp tcp
-	ssh ${ECO_SSH} netstat -na -f ${af} -p ${proto} | fgrep ' *.7 '
+	ssh ${ECO_SSH} netstat -na -f ${inet} -p ${proto} | fgrep ' *.7 '
 .endfor
 .endfor
 .for ip in ECO_IN ECO_OUT RTT_IN
