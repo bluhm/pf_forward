@@ -148,7 +148,7 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 .for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-${inet}-${ip}
 run-regress-ping-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check ping ${ip}${inet:S/inet//}:
 .if "RPT_OUT" == ${ip}
 	ping${inet:S/inet//} -n -c 1 -I ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}}
@@ -166,13 +166,13 @@ run-regress-ping-${inet}-${ip}: stamp-pfctl
 # quoted packet are the same.
 
 run-regress-ping-mtu-1400-${inet}-AF_IN:
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo 'AF_IN is broken with PF MTU.'
 	@echo DISABLED
 
 TARGETS +=	ping-mtu-1400-${inet}-${ip}
 run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
 .if "RPT_OUT" == ${ip}
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1500 1400
@@ -189,7 +189,7 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 
 TARGETS +=	ping-mtu-1300-${inet}-${ip}
 run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check path MTU from ${ip}${inet:S/inet//} is 1300
 .if "RPT_OUT" == ${ip}
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1400 1300
@@ -208,7 +208,7 @@ run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 
 TARGETS +=	udp-${inet}-${ip}
 run-regress-udp-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check UDP ${ip${inet:S/inet//}}:
 .if "RPT_OUT" == ${ip}
 	( echo $$$$ | nc -u -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
@@ -224,7 +224,7 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 
 TARGETS +=	tcp-${inet}-${ip}
 run-regress-tcp-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check tcp ${ip}${inet:S/inet//}:
 	${SUDO} route -n delete -host -inet ${${ip}${inet:S/inet//}} || true
 .if "RPT_OUT" == ${ip}
@@ -257,13 +257,13 @@ TRACEROUTE_CHECK =	awk \
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 .for proto in icmp udp
 run-regress-traceroute-${proto}-${inet}-AF_IN run-regress-traceroute-${proto}-${inet}-RPT_OUT:
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo 'AF_IN is broken with PF MTU.'
 	@echo DISABLED
 
 TARGETS +=	traceroute-${proto}-${inet}-${ip}
 run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
-	@echo '======== $@ ========'
+	@echo '\n======== $@ ========'
 	@echo Check traceroute ${proto} ${ip${inet:S/inet//}}:
 	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} ${${ip}${inet:S/inet//}} | ${TRACEROUTE_CHECK}
 .endfor # proto
