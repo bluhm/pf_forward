@@ -157,7 +157,7 @@ run-regress-ping6: stamp-pfctl
 run-regress-ping-${inet}: run-regress-ping-${inet}-${ip}
 run-regress-ping-${inet}-${ip}:
 	@echo '======== $@ ========'
-	@echo Check ping ${inet} ${ip}:
+	@echo Check ping ${ip}${inet:S/inet//}:
 .if "RPT_OUT" == ${ip}
 .if "inet" == ${inet}
 	ping -n -c 1 -I ${${ip}} ${ECO_IN}
@@ -184,21 +184,33 @@ TARGETS +=	ping-mtu-1400 ping6-mtu-1400
 
 run-regress-ping-mtu-1400: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check path MTU to ${ip} is 1400
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
-.endfor
-	@echo Check path MTU from RPT_OUT is 1400
-	${SUDO} ${PYTHON}ping_mtu.py ${RPT_OUT} ${ECO_IN} 1500 1400
+	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1400-inet
 
 run-regress-ping6-mtu-1400: addr.py stamp-pfctl
 	@echo '\n======== $@ ========'
+	${MAKE} -C ${.CURDIR} run-regress-ping-mtu-1400-inet6
+
+.for inet in inet inet6
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check path MTU to ${ip}6 is 1400
+run-regress-ping-mtu-1400-${inet}: run-regress-ping-mtu-1400-${inet}-${ip}
+run-regress-ping-mtu-1400-${inet}-${ip}:
+	@echo '======== $@ ========'
+	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
+.if "RPT_OUT" == ${ip}
+.if "inet" == ${inet}
+	${SUDO} ${PYTHON}ping_mtu.py ${${ip}} ${ECO_IN} 1500 1400
+.else
+	${SUDO} ${PYTHON}ping6_mtu.py ${${ip}6} ${ECO_IN6} 1500 1400
+.endif
+.else
+.if "inet" == ${inet}
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1400
+.else
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1400
+.endif
+.endif
 .endfor
-	@echo Check path MTU from RPT_OUT6 is 1400
-	${SUDO} ${PYTHON}ping6_mtu.py ${RPT_OUT6} ${ECO_IN6} 1500 1400
+.endfor
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the router.  The MTU has
