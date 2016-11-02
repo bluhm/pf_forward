@@ -155,7 +155,9 @@ run-regress-ping-${inet}-${ip}: stamp-pfctl
 .else
 	ping${inet:S/inet//} -n -c 1 ${${ip}${inet:S/inet//}}
 .endif
-.endfor
+.endfor # ip
+
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the packet filter.  The
@@ -168,7 +170,6 @@ run-regress-ping-mtu-1400-${inet}-AF_IN:
 	@echo 'AF_IN is broken with PF MTU.'
 	@echo DISABLED
 
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-mtu-1400-${inet}-${ip}
 run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
@@ -178,7 +179,6 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 .else
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1500 1400
 .endif
-.endfor
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
 # parse response packet to determine MTU of the router.  The MTU has
@@ -187,7 +187,6 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 # Check that the IP length of the original packet and the ICMP
 # quoted packet are the same.
 
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-mtu-1300-${inet}-${ip}
 run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
@@ -203,12 +202,10 @@ run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 .else
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1400 1300
 .endif
-.endfor
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
 # The response must arrive in 1 second.
 
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	udp-${inet}-${ip}
 run-regress-udp-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
@@ -218,7 +215,6 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 .else
 	( echo $$$$ | nc -u ${${ip}${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
 .endif
-.endfor
 
 # Send a data stream to TCP echo port 7 to all destination addresses
 # with netcat.  Use enough data to make sure PMTU discovery works.
@@ -226,7 +222,6 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 # Delete host route before test to trigger PMTU discovery.
 # XXX AF_IN is broken with PF MTU, make sure that it hits RT MTU 1300.
 
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 TARGETS +=	tcp-${inet}-${ip}
 run-regress-tcp-${inet}-${ip}: stamp-pfctl
 	@echo '======== $@ ========'
@@ -244,8 +239,8 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 .endif
 	openssl rand 200000 | nc -N ${${ip}${inet:S/inet//}} 7 | wc -c | grep '200000$$'
 .endif
-.endfor
 
+.endfor # ip
 .endfor # inet
 
 # Run traceroute with ICMP and UDP to all destination addresses.
