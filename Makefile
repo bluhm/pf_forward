@@ -267,33 +267,33 @@ TARGETS +=	tcp tcp6
 
 run-regress-tcp: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check tcp ${ip}:
-	${SUDO} route -n delete -host -inet ${${ip}} || true
-	openssl rand 200000 | nc -N ${${ip}} 7 | wc -c | grep '200000$$'
-.endfor
-	@echo Check tcp AF_IN:
-	${SUDO} route -n delete -host -inet ${AF_IN} || true
-	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${AF_IN} 1380 1280 || true
-	openssl rand 200000 | nc -N ${AF_IN} 7 | wc -c | grep '200000$$'
-	@echo Check tcp RPT_OUT:
-	${SUDO} route -n delete -host -inet ${RPT_OUT} || true
-	openssl rand 200000 | nc -N -s ${RPT_OUT} ${ECO_IN} 7 | wc -c | grep '200000$$'
+	${MAKE} -C ${.CURDIR} run-regress-tcp-inet
 
 run-regress-tcp6: stamp-pfctl
 	@echo '\n======== $@ ========'
-.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT RTT_IN
-	@echo Check tcp ${ip}6:
-	${SUDO} route -n delete -host -inet6 ${${ip}6} || true
-	openssl rand 200000 | nc -N ${${ip}6} 7 | wc -c | grep '200000$$'
+	${MAKE} -C ${.CURDIR} run-regress-tcp-inet6
+
+.for inet in inet inet6
+.for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+run-regress-tcp-${inet}: run-regress-tcp-${inet}-${ip}
+run-regress-tcp-${inet}-${ip}:
+	@echo '======== $@ ========'
+	@echo Check tcp ${ip}${inet:S/inet//}:
+	${SUDO} route -n delete -host -inet ${${ip}${inet:S/inet//}} || true
+.if "RPT_OUT" == ${ip}
+	openssl rand 200000 | nc -N -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 7 | wc -c | grep '200000$$'
+.else
+.if "AF_IN" == ${ip}
+.if "inet" == ${inet}
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1380 1280
+.else
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1420 1320
+.endif
+.endif
+	openssl rand 200000 | nc -N ${${ip}${inet:S/inet//}} 7 | wc -c | grep '200000$$'
+.endif
 .endfor
-	@echo Check tcp AF_IN6:
-	${SUDO} route -n delete -host -inet6 ${AF_IN6} || true
-	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${AF_IN6} 1420 1320 || true
-	openssl rand 200000 | nc -N ${AF_IN6} 7 | wc -c | grep '200000$$'
-	@echo Check tcp RPT_OUT6:
-	${SUDO} route -n delete -host -inet6 ${RPT_OUT6} || true
-	openssl rand 200000 | nc -N -s ${RPT_OUT6} ${ECO_IN6} 7 | wc -c | grep '200000$$'
+.endfor
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
