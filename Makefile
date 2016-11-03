@@ -265,7 +265,11 @@ TARGETS +=	traceroute-${proto}-${inet}-${ip}
 run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check traceroute ${proto} ${ip${inet:S/inet//}}:
+.if "RPT_OUT" == ${ip}
+	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} | ${TRACEROUTE_CHECK}
+.else
 	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} ${${ip}${inet:S/inet//}} | ${TRACEROUTE_CHECK}
+.endif
 .endfor # proto
 .endfor # ip
 
