@@ -249,10 +249,6 @@ TRACEROUTE_CHECK =	awk \
 
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
 .for proto in icmp udp
-run-regress-traceroute-${proto}-${inet}-RPT_OUT:
-	@echo '\n======== $@ ========'
-	@echo 'AF_IN is broken with PF MTU.'
-	@echo DISABLED
 
 TARGETS +=	traceroute-${proto}-${inet}-${ip}
 run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
