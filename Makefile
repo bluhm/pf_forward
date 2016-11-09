@@ -176,6 +176,12 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
 .if "RPT_OUT" == ${ip}
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1500 1400
+.elif "AF_IN" == ${ip}
+.if "inet" == ${inet}
+	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1380
+.else
+	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1420
+.endif
 .else
 	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1500 1400
 .endif
