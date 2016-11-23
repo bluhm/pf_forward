@@ -237,7 +237,6 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 
 # Run traceroute with ICMP and UDP to all destination addresses.
 # Expect three hops in output and that every probe has a response.
-# XXX AF_IN and RPT_OUT have issues, do not test them now.
 
 TRACEROUTE_CHECK =	awk \
     'BEGIN{ x=0 } \
@@ -251,7 +250,7 @@ TRACEROUTE_CHECK =	awk \
 .for proto in icmp udp
 run-regress-traceroute-${proto}-${inet}-RPT_OUT:
 	@echo '\n======== $@ ========'
-	@echo 'AF_IN is broken with PF MTU.'
+	@echo 'RPT_OUT is broken with PF ttl.'
 	@echo DISABLED
 
 TARGETS +=	traceroute-${proto}-${inet}-${ip}
