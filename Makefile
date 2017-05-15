@@ -229,10 +229,10 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 	@echo Check tcp ${ip}${inet:S/inet//}:
 	${SUDO} route -n delete -host -inet ${${ip}${inet:S/inet//}} || true
 .if "RPT_OUT" == ${ip}
-	openssl rand 200000 | nc -n -N -s ${${ip}${inet:S/inet//}}\
+	openssl rand 200000 | nc -n -N -w 10 -s ${${ip}${inet:S/inet//}}\
 	    ${ECO_IN${inet:S/inet//}} 7 | wc -c | grep '200000$$'
 .else
-	openssl rand 200000 | nc -n -N ${${ip}${inet:S/inet//}} 7 |\
+	openssl rand 200000 | nc -n -N -w 10 ${${ip}${inet:S/inet//}} 7 |\
 	    wc -c | grep '200000$$'
 .endif
 
