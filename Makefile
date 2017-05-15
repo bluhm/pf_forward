@@ -115,7 +115,8 @@ addr.py: Makefile
 	echo 'PF_IFIN="${PF_IFIN}"' >>$@.tmp
 	echo 'PF_IFOUT="${PF_IFOUT}"' >>$@.tmp
 	echo 'PF_MAC="${PF_MAC}"' >>$@.tmp
-.for var in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+.for var in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT\
+    AF_IN RTT_IN RPT_OUT
 	echo '${var}="${${var}}"' >>$@.tmp
 	echo '${var}6="${${var}6}"' >>$@.tmp
 .endfor
@@ -145,13 +146,15 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 # Note that RDR does not exist physically.  So this traffic is rewritten
 # by PF and handled by ECO.
 
-.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RPT_OUT
+.for ip in SRC_OUT PF_IN PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT\
+    AF_IN RTT_IN RPT_OUT
 TARGETS +=	ping-${inet}-${ip}
 run-regress-ping-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check ping ${ip}${inet:S/inet//}:
 .if "RPT_OUT" == ${ip}
-	ping${inet:S/inet//} -n -c 1 -I ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}}
+	ping${inet:S/inet//} -n -c 1 -I ${${ip}${inet:S/inet//}}\
+	    ${ECO_IN${inet:S/inet//}}
 .else
 	ping${inet:S/inet//} -n -c 1 ${${ip}${inet:S/inet//}}
 .endif
@@ -170,7 +173,8 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check path MTU to ${ip}${inet:S/inet//} is 1400
 .if "RPT_OUT" == ${ip}
-	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1500 1400
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}}\
+	    ${ECO_IN${inet:S/inet//}} 1500 1400
 .elif "AF_IN" == ${ip}
 .if "inet" == ${inet}
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1500 1380
@@ -178,7 +182,8 @@ run-regress-ping-mtu-1400-${inet}-${ip}: stamp-pfctl
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1500 1420
 .endif
 .else
-	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1500 1400
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}}\
+	    ${${ip}${inet:S/inet//}} 1500 1400
 .endif
 
 # Send a large IPv4/ICMP-Echo-Request packet with enabled DF bit and
@@ -193,7 +198,8 @@ run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check path MTU from ${ip}${inet:S/inet//} is 1300
 .if "RPT_OUT" == ${ip}
-	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 1400 1300
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${${ip}${inet:S/inet//}}\
+	    ${ECO_IN${inet:S/inet//}} 1400 1300
 .elif "AF_IN" == ${ip}
 .if "inet" == ${inet}
 	${SUDO} ${PYTHON}ping_mtu.py ${SRC_OUT} ${${ip}} 1380 1280
@@ -201,7 +207,8 @@ run-regress-ping-mtu-1300-${inet}-${ip}: stamp-pfctl
 	${SUDO} ${PYTHON}ping6_mtu.py ${SRC_OUT6} ${${ip}6} 1420 1320
 .endif
 .else
-	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}} ${${ip}${inet:S/inet//}} 1400 1300
+	${SUDO} ${PYTHON}ping${inet:S/inet//}_mtu.py ${SRC_OUT${inet:S/inet//}}\
+	    ${${ip}${inet:S/inet//}} 1400 1300
 .endif
 
 # Send one UDP echo port 7 packet to all destination addresses with netcat.
@@ -261,9 +268,12 @@ run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check traceroute ${proto} ${ip${inet:S/inet//}}:
 .if "RPT_OUT" == ${ip}
-	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} | ${TRACEROUTE_CHECK}
+	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//}
+	    -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} |\
+	    ${TRACEROUTE_CHECK}
 .else
-	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//} ${${ip}${inet:S/inet//}} | ${TRACEROUTE_CHECK}
+	traceroute${inet:S/inet//} ${proto:S/icmp/-I/:S/udp//}\
+	    ${${ip}${inet:S/inet//}} | ${TRACEROUTE_CHECK}
 .endif
 .endfor # proto
 .endfor # ip
