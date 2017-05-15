@@ -296,45 +296,57 @@ check-setup-src:
 	route -n get -inet ${${ip}} | grep -q 'flags: .*LOCAL'  # ${ip}
 .endfor
 	ping -n -c 1 ${PF_IN}  # PF_IN
-	route -n get -inet ${PF_IN} | fgrep -q 'interface: ${SRC_IF}'  # PF_IN SRC_IF
+	route -n get -inet ${PF_IN} | fgrep -q 'interface: ${SRC_IF}' \
+	    # PF_IN SRC_IF
 .for ip in PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	route -n get -inet ${${ip}} | fgrep -q 'gateway: ${PF_IN}'  # ${ip} PF_IN
+	route -n get -inet ${${ip}} | fgrep -q 'gateway: ${PF_IN}' \
+	    # ${ip} PF_IN
 .endfor
 .for ip in SRC_OUT RPT_OUT
 	ping6 -n -c 1 ${${ip}6}  # ${ip}6
 	route -n get -inet6 ${${ip}6} | grep -q 'flags: .*LOCAL'  # ${ip}6
 .endfor
 	ping6 -n -c 1 ${PF_IN6}  # PF_IN6
-	route -n get -inet6 ${PF_IN6} | fgrep -q 'interface: ${SRC_IF}'  # PF_IN6 SRC_IF
+	route -n get -inet6 ${PF_IN6} | fgrep -q 'interface: ${SRC_IF}' \
+	    # PF_IN6 SRC_IF
 .for ip in PF_OUT RT_IN RT_OUT ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN
-	route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${PF_IN6}'  # ${ip}6 PF_IN6
+	route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${PF_IN6}' \
+	    # ${ip}6 PF_IN6
 .endfor
 
 check-setup-pf:
 	@echo '\n======== $@ ========'
 	ssh ${PF_SSH} ping -n -c 1 ${PF_IN}  # PF_IN
-	ssh ${PF_SSH} route -n get -inet ${PF_IN} | grep -q 'flags: .*LOCAL'  # PF_IN
+	ssh ${PF_SSH} route -n get -inet ${PF_IN} | grep -q 'flags: .*LOCAL' \
+	    # PF_IN
 	ssh ${PF_SSH} ping -n -c 1 ${SRC_OUT}  # SRC_OUT
 	ssh ${PF_SSH} ping -n -c 1 ${PF_OUT}  # PF_OUT
-	ssh ${PF_SSH} route -n get -inet ${PF_OUT} | grep -q 'flags: .*LOCAL'  # PF_OUT
+	ssh ${PF_SSH} route -n get -inet ${PF_OUT} | grep -q 'flags: .*LOCAL' \
+	    # PF_OUT
 	ssh ${PF_SSH} ping -n -c 1 ${RT_IN}  # RT_IN
 .for ip in RT_OUT ECO_IN ECO_OUT
-	ssh ${PF_SSH} route -n get -inet ${${ip}} | fgrep -q 'gateway: ${RT_IN}'  # ${ip} RT_IN
+	ssh ${PF_SSH} route -n get -inet ${${ip}} |\
+	    fgrep -q 'gateway: ${RT_IN}'  # ${ip} RT_IN
 .endfor
 .for ip in RTT_IN RPT_OUT
-	ssh ${PF_SSH} route -n get -inet ${${ip}} | grep -q 'flags: .*REJECT'  # ${ip} reject
+	ssh ${PF_SSH} route -n get -inet ${${ip}} | grep -q 'flags: .*REJECT' \
+	    # ${ip} reject
 .endfor
 	ssh ${PF_SSH} ping6 -n -c 1 ${PF_IN6}  # PF_IN6
-	ssh ${PF_SSH} route -n get -inet6 ${PF_IN6} | grep -q 'flags: .*LOCAL'  # PF_IN6
+	ssh ${PF_SSH} route -n get -inet6 ${PF_IN6} | grep -q 'flags: .*LOCAL' \
+	    # PF_IN6
 	ssh ${PF_SSH} ping6 -n -c 1 ${SRC_OUT6}  # SRC_OUT6
 	ssh ${PF_SSH} ping6 -n -c 1 ${PF_OUT6}  # PF_OUT6
-	ssh ${PF_SSH} route -n get -inet6 ${PF_OUT6} | grep -q 'flags: .*LOCAL'  # PF_OUT6
+	ssh ${PF_SSH} route -n get -inet6 ${PF_OUT6} |\
+	    grep -q 'flags: .*LOCAL'  # PF_OUT6
 	ssh ${PF_SSH} ping6 -n -c 1 ${RT_IN6}  # RT_IN6
 .for ip in RT_OUT ECO_IN ECO_OUT
-	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${RT_IN6}'  # ${ip}6 RT_IN6
+	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} |\
+	    fgrep -q 'gateway: ${RT_IN6}'  # ${ip}6 RT_IN6
 .endfor
 .for ip in RTT_IN RPT_OUT
-	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} | grep -q 'flags: .*REJECT'  # ${ip}6 reject
+	ssh ${PF_SSH} route -n get -inet6 ${${ip}6} |\
+	    grep -q 'flags: .*REJECT'  # ${ip}6 reject
 .endfor
 	ssh ${PF_SSH} ${SUDO} pfctl -sr | grep '^anchor "regress" all$$'
 	ssh ${PF_SSH} ${SUDO} pfctl -si | grep '^Status: Enabled '
@@ -345,28 +357,36 @@ check-setup-pf:
 check-setup-rt:
 	@echo '\n======== $@ ========'
 	ssh ${RT_SSH} ping -n -c 1 ${RT_IN}  # RT_IN
-	ssh ${RT_SSH} route -n get -inet ${RT_IN} | grep -q 'flags: .*LOCAL'  # RT_IN
+	ssh ${RT_SSH} route -n get -inet ${RT_IN} | grep -q 'flags: .*LOCAL' \
+	    # RT_IN
 	ssh ${RT_SSH} ping -n -c 1 ${PF_OUT}  # PF_OUT
 .for ip in PF_IN SRC_OUT RPT_OUT
-	ssh ${RT_SSH} route -n get -inet ${${ip}} | fgrep -q 'gateway: ${PF_OUT}'  # ${ip} PF_OUT
+	ssh ${RT_SSH} route -n get -inet ${${ip}} |\
+	    fgrep -q 'gateway: ${PF_OUT}'  # ${ip} PF_OUT
 .endfor
 	ssh ${RT_SSH} ping -n -c 1 ${RT_OUT}  # RT_OUT
-	ssh ${RT_SSH} route -n get -inet ${RT_OUT} | grep -q 'flags: .*LOCAL'  # RT_OUT
+	ssh ${RT_SSH} route -n get -inet ${RT_OUT} | grep -q 'flags: .*LOCAL' \
+	    # RT_OUT
 	ssh ${RT_SSH} ping -n -c 1 ${ECO_IN}  # ECO_IN
 .for ip in ECO_OUT RTT_IN
-	ssh ${RT_SSH} route -n get -inet ${${ip}} | fgrep -q 'gateway: ${ECO_IN}'  # ${ip} ECO_IN
+	ssh ${RT_SSH} route -n get -inet ${${ip}} |\
+	    fgrep -q 'gateway: ${ECO_IN}'  # ${ip} ECO_IN
 .endfor
 	ssh ${RT_SSH} ping6 -n -c 1 ${RT_IN6}  # RT_IN6
-	ssh ${RT_SSH} route -n get -inet6 ${RT_IN6} | grep -q 'flags: .*LOCAL'  # RT_IN6
+	ssh ${RT_SSH} route -n get -inet6 ${RT_IN6} | grep -q 'flags: .*LOCAL' \
+	    # RT_IN6
 	ssh ${RT_SSH} ping6 -n -c 1 ${PF_OUT6}  # PF_OUT6
 .for ip in PF_IN SRC_OUT RPT_OUT
-	ssh ${RT_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${PF_OUT6}'  # ${ip}6 PF_OUT6
+	ssh ${RT_SSH} route -n get -inet6 ${${ip}6} |\
+	    fgrep -q 'gateway: ${PF_OUT6}'  # ${ip}6 PF_OUT6
 .endfor
 	ssh ${RT_SSH} ping6 -n -c 1 ${RT_OUT6}  # RT_OUT6
-	ssh ${RT_SSH} route -n get -inet6 ${RT_OUT6} | grep -q 'flags: .*LOCAL'  # RT_OUT6
+	ssh ${RT_SSH} route -n get -inet6 ${RT_OUT6} |\
+	    grep -q 'flags: .*LOCAL'  # RT_OUT6
 	ssh ${RT_SSH} ping6 -n -c 1 ${ECO_IN6}  # ECO_IN6
 .for ip in ECO_OUT RTT_IN
-	ssh ${RT_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${ECO_IN6}'  # ${ip}6 ECO_IN6
+	ssh ${RT_SSH} route -n get -inet6 ${${ip}6} |\
+	    fgrep -q 'gateway: ${ECO_IN6}'  # ${ip}6 ECO_IN6
 .endfor
 	ssh ${RT_SSH} sysctl net.inet.ip.forwarding | fgrep =1
 	ssh ${RT_SSH} sysctl net.inet6.ip6.forwarding | fgrep =1
@@ -376,19 +396,23 @@ check-setup-eco:
 	@echo '\n======== $@ ========'
 .for ip in ECO_IN ECO_OUT RTT_IN
 	ssh ${ECO_SSH} ping -n -c 1 ${${ip}}  # ${ip}
-	ssh ${ECO_SSH} route -n get -inet ${${ip}} | grep -q 'flags: .*LOCAL'  # ${ip}
+	ssh ${ECO_SSH} route -n get -inet ${${ip}} | grep -q 'flags: .*LOCAL' \
+	    # ${ip}
 .endfor
 	ssh ${ECO_SSH} ping -n -c 1 ${RT_OUT}  # RT_OUT
 .for ip in RT_IN PF_OUT PF_IN SRC_OUT RPT_OUT
-	ssh ${ECO_SSH} route -n get -inet ${${ip}} | fgrep -q 'gateway: ${RT_OUT}'  # ${ip} RT_OUT
+	ssh ${ECO_SSH} route -n get -inet ${${ip}} |\
+	    fgrep -q 'gateway: ${RT_OUT}'  # ${ip} RT_OUT
 .endfor
 .for ip in ECO_IN ECO_OUT RTT_IN
 	ssh ${ECO_SSH} ping6 -n -c 1 ${${ip}6}  # ${ip}6
-	ssh ${ECO_SSH} route -n get -inet6 ${${ip}6} | grep -q 'flags: .*LOCAL'  # ${ip}6
+	ssh ${ECO_SSH} route -n get -inet6 ${${ip}6} |\
+	    grep -q 'flags: .*LOCAL'  # ${ip}6
 .endfor
 	ssh ${ECO_SSH} ping6 -n -c 1 ${RT_OUT6}  # RT_OUT6
 .for ip in RT_IN PF_OUT PF_IN SRC_OUT RPT_OUT
-	ssh ${ECO_SSH} route -n get -inet6 ${${ip}6} | fgrep -q 'gateway: ${RT_OUT6}'  # ${ip}6 RT_OUT6
+	ssh ${ECO_SSH} route -n get -inet6 ${${ip}6} |\
+	    fgrep -q 'gateway: ${RT_OUT6}'  # ${ip}6 RT_OUT6
 .endfor
 .for inet in inet inet6
 .for proto in udp tcp
