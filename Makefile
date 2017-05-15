@@ -212,9 +212,10 @@ run-regress-udp-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
 	@echo Check UDP ${ip${inet:S/inet//}}:
 .if "RPT_OUT" == ${ip}
-	( echo $$$$ | nc -u -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
+	echo $$$$ | nc -n -u -W 1 -w 3 -s ${${ip}${inet:S/inet//}}\
+	    ${ECO_IN${inet:S/inet//}} 7 | grep $$$$
 .else
-	( echo $$$$ | nc -u ${${ip}${inet:S/inet//}} 7 & sleep 1; kill $$! ) | grep $$$$
+	echo $$$$ | nc -n -u -W 1 -w 3 ${${ip}${inet:S/inet//}} 7 | grep $$$$
 .endif
 
 # Send a data stream to TCP echo port 7 to all destination addresses
@@ -228,9 +229,11 @@ run-regress-tcp-${inet}-${ip}: stamp-pfctl
 	@echo Check tcp ${ip}${inet:S/inet//}:
 	${SUDO} route -n delete -host -inet ${${ip}${inet:S/inet//}} || true
 .if "RPT_OUT" == ${ip}
-	openssl rand 200000 | nc -N -s ${${ip}${inet:S/inet//}} ${ECO_IN${inet:S/inet//}} 7 | wc -c | grep '200000$$'
+	openssl rand 200000 | nc -n -N -s ${${ip}${inet:S/inet//}}\
+	    ${ECO_IN${inet:S/inet//}} 7 | wc -c | grep '200000$$'
 .else
-	openssl rand 200000 | nc -N ${${ip}${inet:S/inet//}} 7 | wc -c | grep '200000$$'
+	openssl rand 200000 | nc -n -N ${${ip}${inet:S/inet//}} 7 |\
+	    wc -c | grep '200000$$'
 .endif
 
 .endfor # ip
