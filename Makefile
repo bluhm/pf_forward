@@ -258,7 +258,8 @@ TRACEROUTE_CHECK =	awk \
 .for proto in icmp udp
 run-regress-traceroute-${proto}-${inet}-RPT_OUT:
 	@echo '\n======== $@ ========'
-	@echo 'RPT_OUT is broken with PF ttl.'
+	# RPT_OUT traceroute is broken with PF ttl.  The icmp packet has
+	# localhost as source address.  It is selected by reject route.
 	@echo DISABLED
 
 TARGETS +=	traceroute-${proto}-${inet}-${ip}
