@@ -161,7 +161,7 @@ run-regress-traceroute-${proto}-${inet}-RPT_OUT:
 run-regress-traceroute-${proto}-${inet}-RPT_IN:
 	@echo '\n======== $@ ========'
 	# RPT_IN traceroute is broken with PF ttl.  The ICMP packet has
-        # localhost as source address.  It is selected by reject route.
+	# localhost as source address.  It is selected by reject route.
 	@echo DISABLED
 
 run-regress-traceroute-${proto}-${inet}-RTT_IN:
