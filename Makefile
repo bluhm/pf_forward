@@ -143,6 +143,14 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 
 .for inet in inet inet6
 
+.for proto in icmp udp
+run-regress-traceroute-${proto}-${inet}-RPT_OUT:
+	@echo '\n======== $@ ========'
+	# RPT_OUT traceroute is broken with PF ttl.  The icmp packet has
+	# localhost as source address.  It is selected by reject route.
+	@echo DISABLED
+.endfor # proto
+
 # Ping all addresses.  This ensures that the IP addresses are configured
 # and all routing table are set up to allow bidirectional packet flow.
 # Note that RDR does not exist physically.  So this traffic is rewritten
@@ -260,12 +268,6 @@ TRACEROUTE_CHECK =	awk \
 
 .for ip in ECO_IN ECO_OUT RDR_IN RDR_OUT AF_IN RTT_IN RTT_OUT RPT_IN RPT_OUT
 .for proto in icmp udp
-run-regress-traceroute-${proto}-${inet}-RPT_OUT:
-	@echo '\n======== $@ ========'
-	# RPT_OUT traceroute is broken with PF ttl.  The icmp packet has
-	# localhost as source address.  It is selected by reject route.
-	@echo DISABLED
-
 TARGETS +=	traceroute-${proto}-${inet}-${ip}
 run-regress-traceroute-${proto}-${inet}-${ip}: stamp-pfctl
 	@echo '\n======== $@ ========'
