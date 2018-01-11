@@ -143,6 +143,13 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 
 .for inet in inet inet6
 
+run-regress-ping-mtu-1400-${inet}-RPT_OUT:
+	@echo '\n======== $@ ========'
+	# RPT_OUT with locally generated icmp time exceeded cannot work.
+	# The generated packet will not match the out rule with reply-to
+	# so it will be rejected by the route.
+	@echo DISABLED
+
 .for proto in icmp udp
 run-regress-traceroute-${proto}-${inet}-RPT_OUT:
 	@echo '\n======== $@ ========'
