@@ -145,7 +145,7 @@ PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
 
 run-regress-ping-mtu-1400-${inet}-RPT_OUT:
 	@echo '\n======== $@ ========'
-	# RPT_OUT with locally generated icmp time exceeded cannot work.
+	# RPT_OUT with locally generated ICMP time exceeded cannot work.
 	# The generated packet will not match the out rule with reply-to
 	# so it will be rejected by the route.
 	@echo DISABLED
@@ -153,8 +153,15 @@ run-regress-ping-mtu-1400-${inet}-RPT_OUT:
 .for proto in icmp udp
 run-regress-traceroute-${proto}-${inet}-RPT_OUT:
 	@echo '\n======== $@ ========'
-	# RPT_OUT traceroute is broken with PF ttl.  The icmp packet has
+	# RPT_OUT traceroute is broken with PF ttl.  The ICMP packet has
 	# localhost as source address.  It is selected by reject route.
+	@echo DISABLED
+
+run-regress-traceroute-${proto}-${inet}-RTT_IN:
+	@echo '\n======== $@ ========'
+	# RTT_IN traceroute is broken with PF ttl.  The incoming rule has
+	# route-to and the packet never goes through IP forward.  So the TTL
+	# is not decremented.
 	@echo DISABLED
 .endfor # proto
 
