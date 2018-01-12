@@ -30,15 +30,15 @@ regress:
 # RTT addresses exist on ECO, PF has no route and must use route-to RT
 # RPT addresses exist on SRC, PF has no route and must use reply-to SRC
 #
-# +---+   0   +--+   1   +--+   2   +---+ 3
+# +---+   1   +--+   2   +--+   3   +---+ 4
 # |SRC| ----> |PF| ----> |RT| ----> |ECO| 7
 # +---+ 8     +--+       +--+       +---+ 9
 #     out    in  out    in  out    in   out
 #
-# 4 +---+ 5   6 +--+   7 +---+   +---+ 8
-#   |RDR|       |AF|     |RTT|   |RPT|
-#   +---+       +--+     +---+   +---+
-#  in   out    in       in           out
+# 5 +---+ 6   7 +--+    8 +---+ 9   10 +---+ 11
+#   |RDR|       |AF|      |RTT|        |RPT|
+#   +---+       +--+      +---+        +---+
+#  in   out    in        in          out
 
 # Configure Addresses on the machines, there must be routes for the
 # networks.  Adapt interface and addresse variables to your local
