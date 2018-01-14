@@ -163,13 +163,6 @@ run-regress-traceroute-${proto}-${inet}-RPT_IN:
 	# RPT_IN traceroute is broken with PF ttl.  The ICMP packet has
 	# localhost as source address.  It is selected by reject route.
 	@echo DISABLED
-
-run-regress-traceroute-${proto}-${inet}-RTT_IN:
-	@echo '\n======== $@ ========'
-	# RTT_IN traceroute is broken with PF ttl.  The incoming rule has
-	# route-to and the packet never goes through IP forward.  So the TTL
-	# is not decremented.
-	@echo DISABLED
 .endfor # proto
 
 # Ping all addresses.  This ensures that the IP addresses are configured
